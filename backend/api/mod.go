@@ -37,21 +37,27 @@ type ImportMediaReqProtocol struct {
 }
 
 type MediaItem struct {
-	Title       string `json:"title" bson:"title" binding:"required"`
-	ReleaseDate int16  `json:"releaseDate" bson:"release_date" binding:"required"`
-	Description string `json:"description" bson:"description"`
-	Score       int16  `json:"score" bson:"score"`
-	Episodes    string `json:"episodes" bson:"episodes"`
-	PlayConfig  string `json:"playConfig" bson:"play_config"`
-	PosterUrl   string `json:"posterUrl" bson:"poster_url"`
-	FanartUrl   string `json:"fanartUrl" bson:"fanart_url"`
-	Area        string `json:"area" bson:"area"`
-	Type        int8   `json:"type" bson:"type"`
+	Title       string        `json:"title" bson:"title" binding:"required"`
+	ReleaseDate int16         `json:"releaseDate" bson:"release_date" binding:"required"`
+	Description string        `json:"description" bson:"description"`
+	Score       int16         `json:"score" bson:"score"`
+	Episodes    []EpisodeItem `json:"episodes" bson:"episodes"`
+	PlayConfig  string        `json:"playConfig" bson:"play_config"`
+	PosterUrl   string        `json:"posterUrl" bson:"poster_url"`
+	FanartUrl   string        `json:"fanartUrl" bson:"fanart_url"`
+	Area        string        `json:"area" bson:"area"`
+	Type        int8          `json:"type" bson:"type"`
+}
+
+type EpisodeItem struct {
+	Url   string `json:"url" bson:"url"`
+	Name  string `json:"name" bson:"name"`
+	Index int8   `json:"index" bson:"index"`
 }
 
 func ImportMediaHandler(c *gin.Context) {
 	importMediaReqProtocol := ImportMediaReqProtocol{}
-	err := c.ShouldBind(importMediaReqProtocol)
+	err := c.ShouldBindJSON(&importMediaReqProtocol)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, GenResponse(nil, PARAMETER_ERROR, "FAILED"))
