@@ -177,7 +177,9 @@ func ParseTvShowXml(filePath string, mediaModal *db.Media) error {
 	}
 	mediaModal.Description = doc.FindElement("//tvshow/plot").Text()
 	mediaModal.PosterUrl = doc.FindElement("//tvshow/thumb/[@aspect='poster']").Text()
-	mediaModal.FanartUrl = doc.FindElement("//tvshow/fanart/thumb").Text()
+	if doc.FindElement("//tvshow/fanart") != nil && doc.FindElement("//tvshow/fanart/thumb") != nil {
+		mediaModal.FanartUrl = doc.FindElement("//tvshow/fanart/thumb").Text()
+	}
 	if doc.FindElement("//tvshow/ratings/rating") != nil {
 		val, _ := strconv.ParseFloat(doc.FindElement("//tvshow/ratings/rating/[@name='themoviedb']/value").Text(), 32)
 		mediaModal.Score = val
@@ -188,18 +190,23 @@ func ParseTvShowXml(filePath string, mediaModal *db.Media) error {
 }
 
 func ParseMovieXml(filePath string, mediaModal *db.Media) error {
-
+	log.Println("ParseMovieXml")
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(filePath); err != nil {
+		log.Println(err)
 		return err
 	}
 
-	mediaModal.Description = doc.FindElement("//movies/plot").Text()
-	mediaModal.PosterUrl = doc.FindElement("//movies/thumb/[@aspect='poster']").Text()
-	mediaModal.FanartUrl = doc.FindElement("//movies/fanart/thumb").Text()
-	val, _ := strconv.ParseFloat(doc.FindElement("//movies/ratings/rating/[@name='themoviedb']/value").Text(), 32)
-	mediaModal.Score = val
-	mediaModal.Area = doc.FindElement("//movies/country").Text()
+	mediaModal.Description = doc.FindElement("//movie/plot").Text()
+	mediaModal.PosterUrl = doc.FindElement("//movie/thumb/[@aspect='poster']").Text()
+	if doc.FindElement("//movie/fanart") != nil && doc.FindElement("//movie/fanart/thumb") != nil {
+		mediaModal.FanartUrl = doc.FindElement("//movie/fanart/thumb").Text()
+	}
+	if doc.FindElement("//movie/ratings/rating") != nil {
+		val, _ := strconv.ParseFloat(doc.FindElement("//movie/ratings/rating/[@name='themoviedb']/value").Text(), 32)
+		mediaModal.Score = val
+	}
+	mediaModal.Area = doc.FindElement("//movie/country").Text()
 
 	return nil
 }

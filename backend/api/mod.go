@@ -80,7 +80,7 @@ func ImportMediaHandler(c *gin.Context) {
 			utils.ParseTvShowXml(xmlFilePath, &m)
 		}
 		if m.Type == 1 {
-			xmlFilePath := filepath.Join(config.AppConf.TvPath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")", "movie.nfo")
+			xmlFilePath := filepath.Join(config.AppConf.MoviePath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")", "movie.nfo")
 			utils.ParseMovieXml(xmlFilePath, &m)
 		}
 		db.UpdateMedia(&m)
