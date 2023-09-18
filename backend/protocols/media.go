@@ -6,21 +6,22 @@ type ImportMediaReqProtocol struct {
 
 type MediaItem struct {
 	Title       string        `json:"title" bson:"title" binding:"required"`
-	ReleaseDate int16         `json:"releaseDate" bson:"release_date" binding:"required"`
+	ReleaseDate int16         `json:"release_date" bson:"release_date" binding:"required"`
 	Description string        `json:"description" bson:"description"`
-	Score       int16         `json:"score" bson:"score"`
+	Score       float64       `json:"score" bson:"score"`
 	Episodes    []EpisodeItem `json:"episodes" bson:"episodes"`
-	PlayConfig  string        `json:"playConfig" bson:"play_config"`
-	PosterUrl   string        `json:"posterUrl" bson:"poster_url"`
-	FanartUrl   string        `json:"fanartUrl" bson:"fanart_url"`
+	PlayConfig  string        `json:"play_config" bson:"play_config"`
+	PosterUrl   string        `json:"poster_url" bson:"poster_url"`
+	FanartUrl   string        `json:"fanart_url" bson:"fanart_url"`
 	Area        string        `json:"area" bson:"area"`
 	Type        int8          `json:"type" bson:"type"`
 }
 
 type EpisodeItem struct {
-	Url   string `json:"url" bson:"url"`
-	Title string `json:"title" bson:"title"`
-	Index int8   `json:"index" bson:"index"`
+	Season int8   `json:"season" bson:"season"`
+	Url    string `json:"url" bson:"url"`
+	Title  string `json:"title" bson:"title"`
+	Index  int8   `json:"index" bson:"index"`
 }
 
 type Page struct {

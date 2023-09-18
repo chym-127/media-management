@@ -3,7 +3,6 @@ package db
 import (
 	"chym/stream/backend/protocols"
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"gorm.io/gorm"
@@ -14,7 +13,7 @@ type Media struct {
 	Title       string
 	ReleaseDate int16
 	Description string
-	Score       int16
+	Score       float64
 	Episodes    string
 	PlayConfig  string
 	PosterUrl   string
@@ -36,17 +35,22 @@ type MediaWithActor struct {
 	ActorID uint
 }
 
-func CreateMedia(mediaItem protocols.MediaItem) error {
+func CreateMedia(mediaItem protocols.MediaItem) (Media, error) {
 	jsonByte, _ := json.Marshal(mediaItem.Episodes)
 	media := Media{
 		Title:       mediaItem.Title,
 		ReleaseDate: mediaItem.ReleaseDate,
 		Episodes:    string(jsonByte[:]),
+		Type:        mediaItem.Type,
 	}
 
-	result := DB.Create(&media)
-	fmt.Println(result)
+	DB.Create(&media)
 
+	return media, nil
+}
+
+func UpdateMedia(media *Media) error {
+	DB.Save(media)
 	return nil
 }
 

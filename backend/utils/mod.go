@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"chym/stream/backend/config"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 func ReadAllFromUrl(url string) (b []byte, err error) {
@@ -39,4 +41,18 @@ func RemoveFileIfExist(filePath string) bool {
 		}
 	}
 	return false
+}
+
+func GetMediaPath(mediaType int8) string {
+	// 电影
+	if mediaType == 1 {
+		return filepath.Join(config.AppConf.WorkPath, "movies")
+	}
+
+	// 电视剧
+	if mediaType == 2 {
+		return filepath.Join(config.AppConf.WorkPath, "tvs")
+	}
+
+	return ""
 }

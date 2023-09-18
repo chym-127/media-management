@@ -1,11 +1,14 @@
 package api
 
 import (
+	"chym/stream/backend/config"
 	"chym/stream/backend/db"
 	"chym/stream/backend/protocols"
 	"chym/stream/backend/utils"
 	"log"
 	"net/http"
+	"path/filepath"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
@@ -45,10 +48,34 @@ func ImportMediaHandler(c *gin.Context) {
 		c.JSON(http.StatusOK, GenResponse(nil, PARAMETER_ERROR, "FAILED"))
 		return
 	}
+	var mediaModels []db.Media
 	for _, media := range importMediaReqProtocol.Medias {
-		db.CreateMedia(media)
-		utils.SaveEpisode2Disk("C://Medias//tv", media.Episodes)
+		if media.Type == 0 {
+			if len(media.Episodes) > 1 {
+				media.Type = 2
+			} else {
+				media.Type = 1
+			}
+		}
+		mediaModel, _ := db.CreateMedia(media)
+		mediaModels = append(mediaModels, mediaModel)
+		// utils.SaveEpisode2Disk(media)
 	}
+	// utils.GetMediaMetaFromTMDB(1)
+	// utils.GetMediaMetaFromTMDB(2)
+
+	for _, m := range mediaModels {
+		if m.Type == 2 {
+			xmlFilePath := filepath.Join(config.AppConf.TvPath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")", "tvshow.nfo")
+			utils.ParseTvShowXml(xmlFilePath, &m)
+		}
+		if m.Type == 1 {
+			xmlFilePath := filepath.Join(config.AppConf.TvPath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")", "movie.nfo")
+			utils.ParseMovieXml(xmlFilePath, &m)
+		}
+		db.UpdateMedia(&m)
+	}
+
 	c.JSON(http.StatusOK, GenResponse(nil, SUCCESS, "SUCCESS"))
 }
 
