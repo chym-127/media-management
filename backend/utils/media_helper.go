@@ -140,11 +140,13 @@ func SaveEpisode2Disk(mediaItem protocols.MediaItem) {
 			_ = os.Mkdir(outputPath, os.ModeDir)
 			fileName = "E" + strconv.Itoa(int(item.Index)) + ".m3u8"
 		}
-		wg.Add(1)
 		filePath := filepath.Join(outputPath, fileName)
-
 		url := item.Url
-		p.Submit(TaskFuncWrapper(url, filePath, &wg))
+
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			wg.Add(1)
+			p.Submit(TaskFuncWrapper(url, filePath, &wg))
+		}
 	}
 
 	wg.Wait()
@@ -173,12 +175,13 @@ func ParseTvShowXml(filePath string, mediaModal *db.Media) error {
 	if err := doc.ReadFromFile(filePath); err != nil {
 		return err
 	}
-
 	mediaModal.Description = doc.FindElement("//tvshow/plot").Text()
 	mediaModal.PosterUrl = doc.FindElement("//tvshow/thumb/[@aspect='poster']").Text()
 	mediaModal.FanartUrl = doc.FindElement("//tvshow/fanart/thumb").Text()
-	val, _ := strconv.ParseFloat(doc.FindElement("//tvshow/ratings/rating/[@name='themoviedb']/value").Text(), 32)
-	mediaModal.Score = val
+	if doc.FindElement("//tvshow/ratings/rating") != nil {
+		val, _ := strconv.ParseFloat(doc.FindElement("//tvshow/ratings/rating/[@name='themoviedb']/value").Text(), 32)
+		mediaModal.Score = val
+	}
 	mediaModal.Area = doc.FindElement("//tvshow/country").Text()
 
 	return nil
