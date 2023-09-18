@@ -5,6 +5,7 @@ import (
 	"chym/stream/backend/db"
 	"chym/stream/backend/protocols"
 	"chym/stream/backend/utils"
+	"errors"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
+	"gorm.io/gorm"
 )
 
 type RespCode int64
@@ -57,12 +59,20 @@ func ImportMediaHandler(c *gin.Context) {
 				media.Type = 1
 			}
 		}
-		mediaModel, _ := db.CreateMedia(media)
+		mediaModel, err := db.GetMediaByTitleWithDate(media.Title, media.ReleaseDate)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				mediaModel, _ = db.CreateMedia(media)
+			}
+		} else {
+			jsonByte, _ := json.Marshal(media.Episodes)
+			mediaModel.Episodes = string(jsonByte)
+		}
 		mediaModels = append(mediaModels, mediaModel)
-		// utils.SaveEpisode2Disk(media)
+		utils.SaveEpisode2Disk(media)
 	}
-	// utils.GetMediaMetaFromTMDB(1)
-	// utils.GetMediaMetaFromTMDB(2)
+	utils.GetMediaMetaFromTMDB(1)
+	utils.GetMediaMetaFromTMDB(2)
 
 	for _, m := range mediaModels {
 		if m.Type == 2 {
@@ -101,6 +111,7 @@ func ListHandler(c *gin.Context) {
 			c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
 		}
 		m := protocols.MediaItem{
+			ID:          v.ID,
 			Title:       v.Title,
 			ReleaseDate: v.ReleaseDate,
 			Description: v.Description,
@@ -113,6 +124,43 @@ func ListHandler(c *gin.Context) {
 			Type:        v.Type,
 		}
 		resp = append(resp, m)
+	}
+
+	c.JSON(http.StatusOK, GenResponse(resp, SUCCESS, "SUCCESS"))
+}
+
+func GetMediaHandler(c *gin.Context) {
+	getMediaReq := protocols.GetMediaReq{}
+	err := c.ShouldBindJSON(&getMediaReq)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, GenResponse(nil, PARAMETER_ERROR, "FAILED"))
+		return
+	}
+	v, err := db.GetMediaByID(getMediaReq.ID)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
+	}
+	var resp protocols.MediaItem
+	var episode []protocols.EpisodeItem
+	err = json.Unmarshal([]byte(v.Episodes), &episode)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
+	}
+	resp = protocols.MediaItem{
+		ID:          v.ID,
+		Title:       v.Title,
+		ReleaseDate: v.ReleaseDate,
+		Description: v.Description,
+		Score:       v.Score,
+		Episodes:    episode,
+		PlayConfig:  v.PlayConfig,
+		PosterUrl:   v.PosterUrl,
+		FanartUrl:   v.FanartUrl,
+		Area:        v.Area,
+		Type:        v.Type,
 	}
 
 	c.JSON(http.StatusOK, GenResponse(resp, SUCCESS, "SUCCESS"))

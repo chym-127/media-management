@@ -46,6 +46,7 @@ func main() {
 	}))
 	r.POST("/import/media", api.ImportMediaHandler)
 	r.POST("/list/media", api.ListHandler)
+	r.POST("/get/media", api.GetMediaHandler)
 
 	r.Run()
 }

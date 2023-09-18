@@ -5,6 +5,7 @@ type ImportMediaReqProtocol struct {
 }
 
 type MediaItem struct {
+	ID          uint          `json:"id" bson:"id"`
 	Title       string        `json:"title" bson:"title" binding:"required"`
 	ReleaseDate int16         `json:"release_date" bson:"release_date" binding:"required"`
 	Description string        `json:"description" bson:"description"`
@@ -32,4 +33,8 @@ type Page struct {
 type ListMediaReq struct {
 	Page
 	Keywords string `json:"keywords" bson:"keywords"`
+}
+
+type GetMediaReq struct {
+	ID uint `json:"id"`
 }

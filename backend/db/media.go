@@ -62,3 +62,22 @@ func ListMedia() ([]Media, error) {
 	}
 	return medias, nil
 }
+
+func GetMediaByID(id uint) (Media, error) {
+	var media Media
+	result := DB.First(&media, id)
+	if result.Error != nil {
+		log.Println(result.Error)
+	}
+	return media, nil
+}
+
+func GetMediaByTitleWithDate(title string, date int16) (Media, error) {
+	var media Media
+	result := DB.Where("title = ? and release_date = ?", title, date).First(&media)
+	if result.Error != nil {
+		log.Println(result.Error)
+		return media, result.Error
+	}
+	return media, nil
+}
