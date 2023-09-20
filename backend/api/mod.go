@@ -22,6 +22,7 @@ const (
 	SUCCESS         RespCode = 200 //成功
 	PARAMETER_ERROR RespCode = 201 //参数解析错误
 	FAILED          RespCode = 202 //操作失败
+	TASK_RUNNING    RespCode = 203 //任务进行中
 )
 
 type BaseResponse struct {
@@ -74,10 +75,12 @@ func ImportMediaHandler(c *gin.Context) {
 	utils.GetMediaMetaFromTMDB(1)
 	utils.GetMediaMetaFromTMDB(2)
 
-	for _, m := range mediaModels {
+	for index, m := range mediaModels {
 		if m.Type == 2 {
-			xmlFilePath := filepath.Join(config.AppConf.TvPath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")", "tvshow.nfo")
+			mediaPath := filepath.Join(config.AppConf.TvPath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")")
+			xmlFilePath := filepath.Join(mediaPath, "tvshow.nfo")
 			utils.ParseTvShowXml(xmlFilePath, &m)
+			utils.ParseTvShowEpisodeXml(importMediaReqProtocol.Medias[index].Episodes, &m, mediaPath)
 		}
 		if m.Type == 1 {
 			xmlFilePath := filepath.Join(config.AppConf.MoviePath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")", "movie.nfo")
@@ -116,12 +119,12 @@ func ListHandler(c *gin.Context) {
 			ReleaseDate: v.ReleaseDate,
 			Description: v.Description,
 			Score:       v.Score,
-			Episodes:    episode,
-			PlayConfig:  v.PlayConfig,
-			PosterUrl:   v.PosterUrl,
-			FanartUrl:   v.FanartUrl,
-			Area:        v.Area,
-			Type:        v.Type,
+			// Episodes:    episode,
+			PlayConfig: v.PlayConfig,
+			PosterUrl:  v.PosterUrl,
+			FanartUrl:  v.FanartUrl,
+			Area:       v.Area,
+			Type:       v.Type,
 		}
 		resp = append(resp, m)
 	}

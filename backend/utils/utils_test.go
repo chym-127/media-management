@@ -20,3 +20,8 @@ func TestParseTvShowXml(t *testing.T) {
 	ParseTvShowXml("E:\\media\\tvs\\异人之下(2023)\\tvshow.nfo", &media)
 	t.Log(media)
 }
+
+func TestOutputNewM3u8(t *testing.T) {
+	arr := []string{`#EXT-X-KEY:METHOD=AES-128,URI="enc.key"`}
+	OutputNewM3u8(arr, "http://a/a", "E1.m3u8")
+}

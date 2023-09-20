@@ -48,5 +48,5 @@ func main() {
 	r.POST("/list/media", api.ListHandler)
 	r.POST("/get/media", api.GetMediaHandler)
 
-	r.Run()
+	r.Run("0.0.0.0:8080")
 }

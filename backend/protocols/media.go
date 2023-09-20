@@ -19,10 +19,14 @@ type MediaItem struct {
 }
 
 type EpisodeItem struct {
-	Season int8   `json:"season" bson:"season"`
-	Url    string `json:"url" bson:"url"`
-	Title  string `json:"title" bson:"title"`
-	Index  int8   `json:"index" bson:"index"`
+	Index       uint   `json:"index" bson:"index"`
+	Season      uint   `json:"season" bson:"season"`
+	Title       string `json:"title" bson:"title"`
+	ReleaseDate string `json:"releaseDate" bson:"release_date"`
+	Description string `json:"description" bson:"description"`
+	Expand      string `json:"expand" bson:"expand"`
+	Url         string `json:"url" bson:"url"`
+	LocalPath   string `json:"localPath" bson:"local_path"`
 }
 
 type Page struct {

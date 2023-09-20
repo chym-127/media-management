@@ -5,6 +5,7 @@ import (
 	"chym/stream/backend/config"
 	"chym/stream/backend/db"
 	"chym/stream/backend/protocols"
+	"encoding/json"
 	"log"
 	"net/url"
 	"os"
@@ -40,10 +41,13 @@ func GetBaseUrl(uri string) string {
 
 func OutputNewM3u8(strArr []string, baseUrl string, outputPath string) error {
 	url_regexp, _ := regexp.Compile("http.*.ts")
+	is_url_regexp, _ := regexp.Compile("http.*")
 	ts_regexp, _ := regexp.Compile(".*.ts$")
 	duration_regexp, _ := regexp.Compile("#EXTINF:.*")
 	number_re := regexp.MustCompile("[0-9]+.[0-9]+")
 	number_re1 := regexp.MustCompile("[0-9]+")
+	has_key_regexp, _ := regexp.Compile("#EXT-X-KEY:.*")
+	key_url_regexp, _ := regexp.Compile("\".*.key\"")
 
 	outFile, err := os.OpenFile(outputPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -63,6 +67,15 @@ func OutputNewM3u8(strArr []string, baseUrl string, outputPath string) error {
 
 	for _, line := range strArr {
 		newLine := line
+		if has_key_regexp.MatchString(line) {
+			key_url := key_url_regexp.FindString(line)
+			key_url = strings.Replace(key_url, "\"", "", 2)
+
+			if !is_url_regexp.MatchString(key_url) {
+				newKeyUrl := baseUrl + "/" + key_url
+				newLine = strings.Replace(newLine, key_url, newKeyUrl, 1)
+			}
+		}
 		if ts_regexp.MatchString(line) {
 			if !url_regexp.MatchString(line) {
 				newLine = baseUrl + "/" + line
@@ -166,7 +179,7 @@ func GetMediaMetaFromTMDB(mediaType int8) {
 	cmd := exec.Command("tinyMediaManagerCMD", args...)
 	_, err := cmd.CombinedOutput()
 	if err != nil {
-		panic("")
+		log.Println(err)
 	}
 }
 
@@ -207,6 +220,34 @@ func ParseMovieXml(filePath string, mediaModal *db.Media) error {
 		mediaModal.Score = val
 	}
 	mediaModal.Area = doc.FindElement("//movie/country").Text()
+
+	return nil
+}
+
+func ParseTvShowEpisodeXml(episodes []protocols.EpisodeItem, mediaModal *db.Media, mediaPath string) error {
+	str := "Season "
+	for index := range episodes {
+		filePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)), "E"+strconv.Itoa(int(episodes[index].Index))+".nfo")
+		doc := etree.NewDocument()
+		if err := doc.ReadFromFile(filePath); err != nil {
+			log.Println(err)
+			continue
+		}
+
+		if doc.FindElement("//episodedetails/title") != nil {
+			episodes[index].Title = doc.FindElement("//episodedetails/title").Text()
+		}
+		if doc.FindElement("//episodedetails/plot") != nil {
+			episodes[index].Description = doc.FindElement("//episodedetails/plot").Text()
+		}
+
+		if doc.FindElement("//episodedetails/premiered") != nil {
+			episodes[index].ReleaseDate = doc.FindElement("//episodedetails/premiered").Text()
+		}
+
+	}
+	jsonByte, _ := json.Marshal(episodes)
+	mediaModal.Episodes = string(jsonByte[:])
 
 	return nil
 }
