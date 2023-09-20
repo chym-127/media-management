@@ -23,6 +23,15 @@ type Media struct {
 	Expand      string
 }
 
+type MediaDownloadRecord struct {
+	gorm.Model
+	Title         string
+	MediaID       uint
+	EpisodeCount  uint
+	DownloadCount uint
+	Type          uint //1队列中 2下载中 3下载成功 4下载失败
+}
+
 type MediaWithTag struct {
 	gorm.Model
 	MediaID uint
@@ -56,9 +65,9 @@ func UpdateMedia(media *Media) error {
 
 func ListMedia() ([]Media, error) {
 	var medias []Media
-	result := DB.Model(&Media{}).Where("1=1").Find(&medias)
+	result := DB.Model(&Media{}).Find(&medias)
 	if result.Error != nil {
-		log.Println(result.Error)
+		return medias, result.Error
 	}
 	return medias, nil
 }
@@ -68,6 +77,7 @@ func GetMediaByID(id uint) (Media, error) {
 	result := DB.First(&media, id)
 	if result.Error != nil {
 		log.Println(result.Error)
+		return media, result.Error
 	}
 	return media, nil
 }
@@ -79,4 +89,32 @@ func GetMediaByTitleWithDate(title string, date int16) (Media, error) {
 		return media, result.Error
 	}
 	return media, nil
+}
+
+func CreateMediaDownRecord(record MediaDownloadRecord) (MediaDownloadRecord, error) {
+	DB.Create(&record)
+	return record, nil
+}
+
+func UpdateMediaDownRecord(record *MediaDownloadRecord) error {
+	DB.Save(record)
+	return nil
+}
+
+func GetMediaDownloadRecordByMediaID(id uint) (MediaDownloadRecord, error) {
+	var mediaDownloadRecord MediaDownloadRecord
+	result := DB.Where("media_id = ?", id).First(&mediaDownloadRecord)
+	if result.Error != nil {
+		return mediaDownloadRecord, result.Error
+	}
+	return mediaDownloadRecord, nil
+}
+
+func ListMediaDownloadRecord() ([]MediaDownloadRecord, error) {
+	var mediaDownloadRecords []MediaDownloadRecord
+	result := DB.Model(&MediaDownloadRecord{}).Find(&mediaDownloadRecords)
+	if result.Error != nil {
+		log.Println(result.Error)
+	}
+	return mediaDownloadRecords, nil
 }

@@ -104,6 +104,7 @@ func ListHandler(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
+		return
 	}
 	var resp []protocols.MediaItem
 	for _, v := range medias {
@@ -112,6 +113,7 @@ func ListHandler(c *gin.Context) {
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
+			return
 		}
 		m := protocols.MediaItem{
 			ID:          v.ID,
@@ -144,6 +146,7 @@ func GetMediaHandler(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
+		return
 	}
 	var resp protocols.MediaItem
 	var episode []protocols.EpisodeItem
@@ -151,6 +154,7 @@ func GetMediaHandler(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
+		return
 	}
 	resp = protocols.MediaItem{
 		ID:          v.ID,

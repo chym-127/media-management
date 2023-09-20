@@ -42,3 +42,12 @@ type ListMediaReq struct {
 type GetMediaReq struct {
 	ID uint `json:"id"`
 }
+
+type MediaDownloadRecordItem struct {
+	ID            uint   `json:"id" bson:"id"`
+	Title         string `json:"title" bson:"title"`
+	MediaID       uint   `json:"mediaId" bson:"media_id"`
+	EpisodeCount  uint   `json:"episode_count" bson:"episode_count"`
+	DownloadCount uint   `json:"download_count" bson:"download_count"`
+	Type          uint   `json:"type" bson:"type"` //1队列中 2下载中 3下载成功 4下载失败
+}

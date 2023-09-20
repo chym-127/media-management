@@ -149,7 +149,7 @@ func SaveEpisode2Disk(mediaItem protocols.MediaItem) {
 		if mediaItem.Type == 1 {
 			fileName = mediaItem.Title + ".m3u8"
 		} else if mediaItem.Type == 2 {
-			outputPath = filepath.Join(workPath, "Season "+strconv.Itoa(int(item.Season)))
+			outputPath = filepath.Join(workPath, "Season-"+strconv.Itoa(int(item.Season)))
 			_ = os.Mkdir(outputPath, os.ModeDir)
 			fileName = "E" + strconv.Itoa(int(item.Index)) + ".m3u8"
 		}
@@ -225,7 +225,7 @@ func ParseMovieXml(filePath string, mediaModal *db.Media) error {
 }
 
 func ParseTvShowEpisodeXml(episodes []protocols.EpisodeItem, mediaModal *db.Media, mediaPath string) error {
-	str := "Season "
+	str := "Season-"
 	for index := range episodes {
 		filePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)), "E"+strconv.Itoa(int(episodes[index].Index))+".nfo")
 		doc := etree.NewDocument()

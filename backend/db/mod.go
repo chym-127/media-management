@@ -13,5 +13,5 @@ func InitDB() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	DB.AutoMigrate(&Media{}, &MediaWithTag{}, &MediaWithActor{}, &Actor{}, &MediaTag{})
+	DB.AutoMigrate(&Media{}, &MediaWithTag{}, &MediaWithActor{}, &Actor{}, &MediaTag{}, &MediaDownloadRecord{})
 }

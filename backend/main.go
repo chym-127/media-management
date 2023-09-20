@@ -4,6 +4,7 @@ import (
 	"chym/stream/backend/api"
 	"chym/stream/backend/config"
 	"chym/stream/backend/db"
+	"chym/stream/backend/utils"
 	"log"
 	"time"
 
@@ -35,6 +36,7 @@ func main() {
 	})
 
 	db.InitDB()
+	utils.InitDowner(3)
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
@@ -47,6 +49,8 @@ func main() {
 	r.POST("/import/media", api.ImportMediaHandler)
 	r.POST("/list/media", api.ListHandler)
 	r.POST("/get/media", api.GetMediaHandler)
+	r.POST("/down/media", api.DownloadMediaHandle)
+	r.POST("/list/task", api.DownTaskListHandle)
 
 	r.Run("0.0.0.0:8080")
 }
