@@ -93,8 +93,8 @@ func GetMediaByTitleWithDate(title string, date int16) (Media, error) {
 	return media, nil
 }
 
-func CreateMediaDownRecord(record MediaDownloadRecord) (MediaDownloadRecord, error) {
-	DB.Create(&record)
+func CreateMediaDownRecord(record *MediaDownloadRecord) (*MediaDownloadRecord, error) {
+	DB.Create(record)
 	return record, nil
 }
 

@@ -81,6 +81,8 @@ func DownloadMediaAllEpisode(media db.Media, record db.MediaDownloadRecord) erro
 		return err
 	}
 
+	record.Title = media.Title
+	record.MediaID = media.ID
 	record.EpisodeCount = uint(len(episodes))
 	record.SuccessCount = uint(0)
 	record.FailedCount = uint(0)
@@ -121,7 +123,7 @@ func DownloadMediaAllEpisode(media db.Media, record db.MediaDownloadRecord) erro
 		record.Type = 3
 	}
 	if record.ID == 0 {
-		db.CreateMediaDownRecord(record)
+		db.CreateMediaDownRecord(&record)
 	} else {
 		db.UpdateMediaDownRecord(&record)
 	}
