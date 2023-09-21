@@ -269,17 +269,46 @@ func ParseTvShowEpisodeXml(episodes []protocols.EpisodeItem, mediaModal *db.Medi
 func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath string) {
 	str := "Season-"
 	for index := range episodes {
-		mp4FilePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)), "E"+strconv.Itoa(int(episodes[index].Index))+".mp4")
+		basePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)))
+		mp4FilePath := filepath.Join(basePath, "E"+strconv.Itoa(int(episodes[index].Index))+".mp4")
+		m3u8FilePath := filepath.Join(basePath, "E"+strconv.Itoa(int(episodes[index].Index))+".m3u8")
+		backM3u8FilePath := filepath.Join(basePath, "~E"+strconv.Itoa(int(episodes[index].Index))+".m3u8")
+
 		if _, err := os.Stat(mp4FilePath); err == nil {
 			UpdateNfoFile(mp4FilePath, "E"+strconv.Itoa(int(episodes[index].Index)))
+			if _, err := os.Stat(m3u8FilePath); err == nil {
+				e := os.Rename(m3u8FilePath, backM3u8FilePath)
+				if e != nil {
+					continue
+				}
+			} else {
+				e := os.Rename(backM3u8FilePath, m3u8FilePath)
+				if e != nil {
+					return
+				}
+			}
 		}
 	}
 }
 
 func UpdateMovieEpisodeFileName(mediaPath string, mediaTitle string) {
 	mp4FilePath := filepath.Join(mediaPath, mediaTitle+".mp4")
+	m3u8FilePath := filepath.Join(mediaPath, mediaTitle+".m3u8")
+	backM3u8FilePath := filepath.Join(mediaPath, "~"+mediaTitle+".m3u8")
+
 	if _, err := os.Stat(mp4FilePath); err == nil {
 		UpdateNfoFile(mp4FilePath, "movie")
+		if _, err := os.Stat(m3u8FilePath); err == nil {
+			e := os.Rename(m3u8FilePath, backM3u8FilePath)
+			if e != nil {
+				return
+			}
+		} else {
+			e := os.Rename(backM3u8FilePath, m3u8FilePath)
+			if e != nil {
+				return
+			}
+		}
 	}
 }
 
