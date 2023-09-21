@@ -63,6 +63,7 @@ type DownTask struct {
 	MeidaID        uint
 	OutputFilePath string
 	InputFileName  string
+	NfoFileName    string
 }
 
 func DownloadMediaAllEpisode(media db.Media) error {
@@ -93,14 +94,17 @@ func DownloadMediaAllEpisode(media db.Media) error {
 	for _, episode := range episodes {
 		var inputFileName string
 		var outputFileName string
+		var nfoFileName string
 		seasonName := str + strconv.Itoa(int(episode.Season))
 		if media.Type == 1 {
 			inputFileName = media.Title + ".m3u8"
 			outputFileName = media.Title + ".mp4"
+			nfoFileName = "movie"
 		}
 		if media.Type == 2 {
 			inputFileName = filepath.Join(seasonName, "E"+strconv.Itoa(int(episode.Index))+".m3u8")
 			outputFileName = filepath.Join(seasonName, "E"+strconv.Itoa(int(episode.Index))+".mp4")
+			nfoFileName = "E" + strconv.Itoa(int(episode.Index))
 		}
 		m3u8FilePath := filepath.Join(mediaPath, inputFileName)
 		outputFilePath := filepath.Join(mediaPath, outputFileName)
@@ -109,6 +113,7 @@ func DownloadMediaAllEpisode(media db.Media) error {
 				InputFileName:  m3u8FilePath,
 				OutputFilePath: outputFilePath,
 				MeidaID:        media.ID,
+				NfoFileName:    nfoFileName,
 			})
 		} else {
 			record.DownloadCount += 1

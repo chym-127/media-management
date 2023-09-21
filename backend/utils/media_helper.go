@@ -202,7 +202,7 @@ func ParseTvShowXml(filePath string, mediaModal *db.Media) error {
 	return nil
 }
 
-func ParseMovieXml(filePath string, mediaModal *db.Media) error {
+func ParseMovieXml(filePath string, mediaModal *db.Media, episodes []protocols.EpisodeItem) error {
 	log.Println("ParseMovieXml")
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(filePath); err != nil {
@@ -219,6 +219,13 @@ func ParseMovieXml(filePath string, mediaModal *db.Media) error {
 		val, _ := strconv.ParseFloat(doc.FindElement("//movie/ratings/rating/[@name='themoviedb']/value").Text(), 32)
 		mediaModal.Score = val
 	}
+
+	original_filename_el := doc.FindElement("//movie/original_filename")
+	if original_filename_el != nil && len(episodes) == 1 {
+		episodes[0].LocalPath = original_filename_el.Text()
+		jsonByte, _ := json.Marshal(episodes)
+		mediaModal.Episodes = string(jsonByte[:])
+	}
 	mediaModal.Area = doc.FindElement("//movie/country").Text()
 
 	return nil
@@ -227,9 +234,11 @@ func ParseMovieXml(filePath string, mediaModal *db.Media) error {
 func ParseTvShowEpisodeXml(episodes []protocols.EpisodeItem, mediaModal *db.Media, mediaPath string) error {
 	str := "Season-"
 	for index := range episodes {
-		filePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)), "E"+strconv.Itoa(int(episodes[index].Index))+".nfo")
+		nfoFilePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)), "E"+strconv.Itoa(int(episodes[index].Index))+".nfo")
+		// filePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)), "E"+strconv.Itoa(int(episodes[index].Index))+".mp4")
+
 		doc := etree.NewDocument()
-		if err := doc.ReadFromFile(filePath); err != nil {
+		if err := doc.ReadFromFile(nfoFilePath); err != nil {
 			log.Println(err)
 			continue
 		}
@@ -245,9 +254,54 @@ func ParseTvShowEpisodeXml(episodes []protocols.EpisodeItem, mediaModal *db.Medi
 			episodes[index].ReleaseDate = doc.FindElement("//episodedetails/premiered").Text()
 		}
 
+		original_filename_el := doc.FindElement("//episodedetails/original_filename")
+		if original_filename_el != nil {
+			episodes[index].LocalPath = original_filename_el.Text()
+		}
+
 	}
 	jsonByte, _ := json.Marshal(episodes)
 	mediaModal.Episodes = string(jsonByte[:])
 
+	return nil
+}
+
+func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath string) {
+	str := "Season-"
+	for index := range episodes {
+		mp4FilePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)), "E"+strconv.Itoa(int(episodes[index].Index))+".mp4")
+		if _, err := os.Stat(mp4FilePath); err == nil {
+			UpdateNfoFile(mp4FilePath, "E"+strconv.Itoa(int(episodes[index].Index)))
+		}
+	}
+}
+
+func UpdateMovieEpisodeFileName(mediaPath string, mediaTitle string) {
+	mp4FilePath := filepath.Join(mediaPath, mediaTitle+".mp4")
+	if _, err := os.Stat(mp4FilePath); err == nil {
+		UpdateNfoFile(mp4FilePath, "movie")
+	}
+}
+
+// filePath mp4的绝对路径
+func UpdateNfoFile(filePath string, nfoFileName string) error {
+	dir, fileName := filepath.Split(filePath)
+	nfoFilePath := filepath.Join(dir, nfoFileName+".nfo")
+	doc := etree.NewDocument()
+	if err := doc.ReadFromFile(nfoFilePath); err != nil {
+		log.Println(err)
+		return nil
+	}
+	var original_filename_el *etree.Element
+	if nfoFileName == "movie" {
+		original_filename_el = doc.FindElement("//movie/original_filename")
+	} else {
+		original_filename_el = doc.FindElement("//episodedetails/original_filename")
+	}
+	if original_filename_el != nil {
+		original_filename_el.SetText(fileName)
+	}
+
+	doc.WriteToFile(nfoFilePath)
 	return nil
 }
