@@ -281,11 +281,11 @@ func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath str
 				if e != nil {
 					continue
 				}
-			} else {
-				e := os.Rename(backM3u8FilePath, m3u8FilePath)
-				if e != nil {
-					return
-				}
+			}
+		} else {
+			e := os.Rename(backM3u8FilePath, m3u8FilePath)
+			if e != nil {
+				return
 			}
 		}
 	}
@@ -303,11 +303,11 @@ func UpdateMovieEpisodeFileName(mediaPath string, mediaTitle string) {
 			if e != nil {
 				return
 			}
-		} else {
-			e := os.Rename(backM3u8FilePath, m3u8FilePath)
-			if e != nil {
-				return
-			}
+		}
+	} else {
+		e := os.Rename(backM3u8FilePath, m3u8FilePath)
+		if e != nil {
+			return
 		}
 	}
 }

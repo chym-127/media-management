@@ -24,12 +24,12 @@ func DownloadMediaHandle(c *gin.Context) {
 		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
 		return
 	}
-	_, err = db.GetMediaDownloadRecordByMediaID(media.ID)
-	if err == nil {
+	record, _ := db.GetMediaDownloadRecordByMediaID(media.ID)
+	if record.Type == 1 || record.Type == 2 {
 		c.JSON(http.StatusOK, GenResponse(nil, TASK_RUNNING, "下载任务已存在，请勿重复下载"))
 		return
 	}
-	go utils.DownloadMediaAllEpisode(media)
+	go utils.DownloadMediaAllEpisode(media, record)
 	c.JSON(http.StatusOK, GenResponse(nil, SUCCESS, "SUCCESS"))
 }
 

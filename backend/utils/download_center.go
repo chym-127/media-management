@@ -66,7 +66,7 @@ type DownTask struct {
 	NfoFileName    string
 }
 
-func DownloadMediaAllEpisode(media db.Media) error {
+func DownloadMediaAllEpisode(media db.Media, record db.MediaDownloadRecord) error {
 	var mediaPath string
 	if media.Type == 2 {
 		mediaPath = filepath.Join(config.AppConf.TvPath, media.Title+"("+strconv.Itoa(int(media.ReleaseDate))+")")
@@ -80,15 +80,12 @@ func DownloadMediaAllEpisode(media db.Media) error {
 	if err != nil {
 		return err
 	}
-	record := db.MediaDownloadRecord{
-		Title:         media.Title,
-		MediaID:       media.ID,
-		SuccessCount:  0,
-		FailedCount:   0,
-		DownloadCount: 0,
-		EpisodeCount:  uint(len(episodes)),
-		Type:          1,
-	}
+
+	record.EpisodeCount = uint(len(episodes))
+	record.SuccessCount = uint(0)
+	record.FailedCount = uint(0)
+	record.DownloadCount = uint(0)
+	record.Type = uint(1)
 
 	str := "Season-"
 	for _, episode := range episodes {
@@ -123,7 +120,11 @@ func DownloadMediaAllEpisode(media db.Media) error {
 	if record.DownloadCount == uint(len(episodes)) {
 		record.Type = 3
 	}
-	db.CreateMediaDownRecord(record)
+	if record.ID == 0 {
+		db.CreateMediaDownRecord(record)
+	} else {
+		db.UpdateMediaDownRecord(&record)
+	}
 	for _, task := range tasks {
 		DOWNER.Submit(taskFuncWrapper(task.InputFileName, task.OutputFilePath, task.MeidaID))
 	}
