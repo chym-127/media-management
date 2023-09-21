@@ -272,7 +272,7 @@ func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath str
 		basePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)))
 		mp4FilePath := filepath.Join(basePath, "E"+strconv.Itoa(int(episodes[index].Index))+".mp4")
 		m3u8FilePath := filepath.Join(basePath, "E"+strconv.Itoa(int(episodes[index].Index))+".m3u8")
-		backM3u8FilePath := filepath.Join(basePath, "~E"+strconv.Itoa(int(episodes[index].Index))+".m3u8")
+		backM3u8FilePath := filepath.Join(basePath, strconv.Itoa(int(episodes[index].Index))+".m3u8.back")
 
 		if _, err := os.Stat(mp4FilePath); err == nil {
 			UpdateNfoFile(mp4FilePath, "E"+strconv.Itoa(int(episodes[index].Index)))
@@ -294,7 +294,7 @@ func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath str
 func UpdateMovieEpisodeFileName(mediaPath string, mediaTitle string) {
 	mp4FilePath := filepath.Join(mediaPath, mediaTitle+".mp4")
 	m3u8FilePath := filepath.Join(mediaPath, mediaTitle+".m3u8")
-	backM3u8FilePath := filepath.Join(mediaPath, "~"+mediaTitle+".m3u8")
+	backM3u8FilePath := filepath.Join(mediaPath, mediaTitle+".m3u8.back")
 
 	if _, err := os.Stat(mp4FilePath); err == nil {
 		UpdateNfoFile(mp4FilePath, "movie")
