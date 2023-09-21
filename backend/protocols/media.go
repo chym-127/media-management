@@ -49,5 +49,7 @@ type MediaDownloadRecordItem struct {
 	MediaID       uint   `json:"mediaId" bson:"media_id"`
 	EpisodeCount  uint   `json:"episode_count" bson:"episode_count"`
 	DownloadCount uint   `json:"download_count" bson:"download_count"`
+	SuccessCount  uint   `json:"success_count" bson:"success_count"`
+	FailedCount   uint   `json:"failed_count" bson:"failed_count"`
 	Type          uint   `json:"type" bson:"type"` //1队列中 2下载中 3下载成功 4下载失败
 }

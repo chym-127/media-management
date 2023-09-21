@@ -21,7 +21,9 @@ var DOWNER *ants.Pool
 // 初始化下载器
 func InitDowner(max int) {
 	var err error
-	DOWNER, err = ants.NewPool(max)
+	DOWNER, err = ants.NewPool(max, ants.WithOptions(ants.Options{
+		MaxBlockingTasks: 1000,
+	}))
 	if err != nil {
 		panic("InitDowner failed")
 	}
@@ -34,13 +36,19 @@ func taskFuncWrapper(m3u8FilePath string, outputFilePath string, mediaId uint) t
 		cmd := exec.Command("m3u8_downloader", args...)
 		cmd.Dir = filepath.Dir(m3u8FilePath)
 		_, err := cmd.CombinedOutput()
+		success := true
 		if err != nil {
-			log.Println(err)
+			success = false
 		}
 
 		record, err := db.GetMediaDownloadRecordByMediaID(mediaId)
 		if err == nil {
 			record.DownloadCount += 1
+			if success {
+				record.SuccessCount += 1
+			} else {
+				record.FailedCount += 1
+			}
 			if record.DownloadCount == record.EpisodeCount {
 				record.Type = 3
 			} else {
@@ -49,6 +57,12 @@ func taskFuncWrapper(m3u8FilePath string, outputFilePath string, mediaId uint) t
 			db.UpdateMediaDownRecord(&record)
 		}
 	}
+}
+
+type DownTask struct {
+	MeidaID        uint
+	OutputFilePath string
+	InputFileName  string
 }
 
 func DownloadMediaAllEpisode(media db.Media) error {
@@ -60,6 +74,7 @@ func DownloadMediaAllEpisode(media db.Media) error {
 		mediaPath = filepath.Join(config.AppConf.MoviePath, media.Title+"("+strconv.Itoa(int(media.ReleaseDate))+")")
 	}
 	var episodes []protocols.EpisodeItem
+	var tasks []DownTask
 	err := json.Unmarshal([]byte(media.Episodes), &episodes)
 	if err != nil {
 		return err
@@ -67,12 +82,13 @@ func DownloadMediaAllEpisode(media db.Media) error {
 	record := db.MediaDownloadRecord{
 		Title:         media.Title,
 		MediaID:       media.ID,
+		SuccessCount:  0,
+		FailedCount:   0,
 		DownloadCount: 0,
 		EpisodeCount:  uint(len(episodes)),
 		Type:          1,
 	}
 
-	db.CreateMediaDownRecord(record)
 	str := "Season-"
 	for _, episode := range episodes {
 		var inputFileName string
@@ -89,9 +105,22 @@ func DownloadMediaAllEpisode(media db.Media) error {
 		m3u8FilePath := filepath.Join(mediaPath, inputFileName)
 		outputFilePath := filepath.Join(mediaPath, outputFileName)
 		if _, err := os.Stat(outputFilePath); errors.Is(err, os.ErrNotExist) {
-			DOWNER.Submit(taskFuncWrapper(m3u8FilePath, outputFilePath, media.ID))
+			tasks = append(tasks, DownTask{
+				InputFileName:  m3u8FilePath,
+				OutputFilePath: outputFilePath,
+				MeidaID:        media.ID,
+			})
+		} else {
+			record.DownloadCount += 1
+			record.SuccessCount += 1
 		}
 	}
-
+	if record.DownloadCount == uint(len(episodes)) {
+		record.Type = 3
+	}
+	db.CreateMediaDownRecord(record)
+	for _, task := range tasks {
+		DOWNER.Submit(taskFuncWrapper(task.InputFileName, task.OutputFilePath, task.MeidaID))
+	}
 	return nil
 }

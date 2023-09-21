@@ -29,6 +29,8 @@ type MediaDownloadRecord struct {
 	MediaID       uint
 	EpisodeCount  uint
 	DownloadCount uint
+	SuccessCount  uint
+	FailedCount   uint
 	Type          uint //1队列中 2下载中 3下载成功 4下载失败
 }
 

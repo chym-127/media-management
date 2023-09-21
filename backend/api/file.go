@@ -29,7 +29,7 @@ func DownloadMediaHandle(c *gin.Context) {
 		c.JSON(http.StatusOK, GenResponse(nil, TASK_RUNNING, "下载任务已存在，请勿重复下载"))
 		return
 	}
-	utils.DownloadMediaAllEpisode(media)
+	go utils.DownloadMediaAllEpisode(media)
 	c.JSON(http.StatusOK, GenResponse(nil, SUCCESS, "SUCCESS"))
 }
 
@@ -47,6 +47,8 @@ func DownTaskListHandle(c *gin.Context) {
 			Title:         v.Title,
 			DownloadCount: v.DownloadCount,
 			EpisodeCount:  v.EpisodeCount,
+			SuccessCount:  v.SuccessCount,
+			FailedCount:   v.FailedCount,
 			Type:          v.Type,
 		}
 		resp = append(resp, m)
