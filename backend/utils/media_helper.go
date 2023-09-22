@@ -189,7 +189,10 @@ func ParseTvShowXml(filePath string, mediaModal *db.Media) error {
 		return err
 	}
 	mediaModal.Description = doc.FindElement("//tvshow/plot").Text()
-	mediaModal.PosterUrl = doc.FindElement("//tvshow/thumb/[@aspect='poster']").Text()
+	if doc.FindElement("//tvshow/thumb/[@aspect='poster']") != nil {
+		mediaModal.PosterUrl = doc.FindElement("//tvshow/thumb/[@aspect='poster']").Text()
+	}
+
 	if doc.FindElement("//tvshow/fanart") != nil && doc.FindElement("//tvshow/fanart/thumb") != nil {
 		mediaModal.FanartUrl = doc.FindElement("//tvshow/fanart/thumb").Text()
 	}
@@ -211,7 +214,10 @@ func ParseMovieXml(filePath string, mediaModal *db.Media, episodes []protocols.E
 	}
 
 	mediaModal.Description = doc.FindElement("//movie/plot").Text()
-	mediaModal.PosterUrl = doc.FindElement("//movie/thumb/[@aspect='poster']").Text()
+	if doc.FindElement("//movie/thumb/[@aspect='poster']") != nil {
+		mediaModal.PosterUrl = doc.FindElement("//movie/thumb/[@aspect='poster']").Text()
+	}
+
 	if doc.FindElement("//movie/fanart") != nil && doc.FindElement("//movie/fanart/thumb") != nil {
 		mediaModal.FanartUrl = doc.FindElement("//movie/fanart/thumb").Text()
 	}
