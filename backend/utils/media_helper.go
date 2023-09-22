@@ -206,7 +206,6 @@ func ParseTvShowXml(filePath string, mediaModal *db.Media) error {
 }
 
 func ParseMovieXml(filePath string, mediaModal *db.Media, episodes []protocols.EpisodeItem) error {
-	log.Println("ParseMovieXml")
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(filePath); err != nil {
 		log.Println(err)
@@ -272,8 +271,9 @@ func ParseTvShowEpisodeXml(episodes []protocols.EpisodeItem, mediaModal *db.Medi
 	return nil
 }
 
-func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath string) {
+func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath string) (int, error) {
 	str := "Season-"
+	count := 0
 	for index := range episodes {
 		basePath := filepath.Join(mediaPath, str+strconv.Itoa(int(episodes[index].Season)))
 		mp4FilePath := filepath.Join(basePath, "E"+strconv.Itoa(int(episodes[index].Index))+".mp4")
@@ -281,6 +281,7 @@ func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath str
 		backM3u8FilePath := filepath.Join(basePath, strconv.Itoa(int(episodes[index].Index))+".m3u8.back")
 
 		if _, err := os.Stat(mp4FilePath); err == nil {
+			count += 1
 			UpdateNfoFile(mp4FilePath, "E"+strconv.Itoa(int(episodes[index].Index)))
 			if _, err := os.Stat(m3u8FilePath); err == nil {
 				e := os.Rename(m3u8FilePath, backM3u8FilePath)
@@ -291,31 +292,35 @@ func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath str
 		} else {
 			e := os.Rename(backM3u8FilePath, m3u8FilePath)
 			if e != nil {
-				return
+				continue
 			}
 		}
 	}
+
+	return count, nil
 }
 
-func UpdateMovieEpisodeFileName(mediaPath string, mediaTitle string) {
+func UpdateMovieEpisodeFileName(mediaPath string, mediaTitle string) (int, error) {
 	mp4FilePath := filepath.Join(mediaPath, mediaTitle+".mp4")
 	m3u8FilePath := filepath.Join(mediaPath, mediaTitle+".m3u8")
 	backM3u8FilePath := filepath.Join(mediaPath, mediaTitle+".m3u8.back")
+	count := 0
 
 	if _, err := os.Stat(mp4FilePath); err == nil {
+		count += 1
 		UpdateNfoFile(mp4FilePath, "movie")
 		if _, err := os.Stat(m3u8FilePath); err == nil {
 			e := os.Rename(m3u8FilePath, backM3u8FilePath)
 			if e != nil {
-				return
 			}
 		}
 	} else {
 		e := os.Rename(backM3u8FilePath, m3u8FilePath)
 		if e != nil {
-			return
 		}
 	}
+
+	return count, nil
 }
 
 // filePath mp4的绝对路径

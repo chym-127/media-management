@@ -33,6 +33,23 @@ func DownloadMediaHandle(c *gin.Context) {
 	c.JSON(http.StatusOK, GenResponse(nil, SUCCESS, "SUCCESS"))
 }
 
+// 下载所有未本地化的媒体资源
+func DownloadAllMediaHandle(c *gin.Context) {
+	medias, err := db.ListMediaWithLocalEpisodeCount()
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
+		return
+	}
+	for _, media := range medias {
+		record, _ := db.GetMediaDownloadRecordByMediaID(media.ID)
+		if record.Type != 1 && record.Type != 2 {
+			go utils.DownloadMediaAllEpisode(media, record)
+		}
+	}
+	c.JSON(http.StatusOK, GenResponse(nil, SUCCESS, "SUCCESS"))
+}
+
 func DownTaskListHandle(c *gin.Context) {
 	items, err := db.ListMediaDownloadRecord()
 	if err != nil {

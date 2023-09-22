@@ -49,6 +49,7 @@ func main() {
 	r.POST("/get/media", api.GetMediaHandler)
 	r.POST("/down/media", api.DownloadMediaHandle)
 	r.POST("/list/task", api.DownTaskListHandle)
+	r.POST("/down/media/nolocal", api.DownloadAllMediaHandle)
 
 	r.POST("/update/medias/from-disk", api.UpdateMediaMetaDataFromDisk)
 

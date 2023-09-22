@@ -50,19 +50,21 @@ func UpdateMediaMetaDataFromDisk(c *gin.Context) {
 			log.Println(err)
 			continue
 		}
+		count := 0
 		if m.Type == 2 {
 			mediaPath := filepath.Join(config.AppConf.TvPath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")")
 			xmlFilePath := filepath.Join(mediaPath, "tvshow.nfo")
 			utils.ParseTvShowXml(xmlFilePath, &m)
-			utils.UpdateTvShowEpisodeFileName(episode, mediaPath)
+			count, _ = utils.UpdateTvShowEpisodeFileName(episode, mediaPath)
 			utils.ParseTvShowEpisodeXml(episode, &m, mediaPath)
 		}
 		if m.Type == 1 {
 			mediaPath := filepath.Join(config.AppConf.MoviePath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")")
 			xmlFilePath := filepath.Join(mediaPath, "movie.nfo")
-			utils.UpdateMovieEpisodeFileName(mediaPath, m.Title)
+			count, _ = utils.UpdateMovieEpisodeFileName(mediaPath, m.Title)
 			utils.ParseMovieXml(xmlFilePath, &m, episode)
 		}
+		m.LocalEpisodeCount = int16(count)
 		db.UpdateMedia(&m)
 	}
 

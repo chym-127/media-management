@@ -10,17 +10,18 @@ import (
 
 type Media struct {
 	gorm.Model
-	Title       string
-	ReleaseDate int16
-	Description string
-	Score       float64
-	Episodes    string
-	PlayConfig  string
-	PosterUrl   string
-	FanartUrl   string
-	Area        string
-	Type        int8
-	Expand      string
+	Title             string
+	ReleaseDate       int16
+	Description       string
+	Score             float64
+	Episodes          string
+	PlayConfig        string
+	PosterUrl         string
+	FanartUrl         string
+	Area              string
+	Type              int8
+	LocalEpisodeCount int16 //本地化文件数量
+	Expand            string
 }
 
 type MediaDownloadRecord struct {
@@ -74,6 +75,15 @@ func ListMedia() ([]Media, error) {
 	return medias, nil
 }
 
+func ListMediaWithLocalEpisodeCount() ([]Media, error) {
+	var medias []Media
+	result := DB.Model(&Media{}).Where("local_episode_count = 0").Find(&medias)
+	if result.Error != nil {
+		return medias, result.Error
+	}
+	return medias, nil
+}
+
 func GetMediaByID(id uint) (Media, error) {
 	var media Media
 	result := DB.First(&media, id)
@@ -115,6 +125,15 @@ func GetMediaDownloadRecordByMediaID(id uint) (MediaDownloadRecord, error) {
 func ListMediaDownloadRecord() ([]MediaDownloadRecord, error) {
 	var mediaDownloadRecords []MediaDownloadRecord
 	result := DB.Model(&MediaDownloadRecord{}).Find(&mediaDownloadRecords)
+	if result.Error != nil {
+		log.Println(result.Error)
+	}
+	return mediaDownloadRecords, nil
+}
+
+func ListMediaDownloadRecordWithNoLocal() ([]MediaDownloadRecord, error) {
+	var mediaDownloadRecords []MediaDownloadRecord
+	result := DB.Model(&MediaDownloadRecord{}).Where("1=1").Find(&mediaDownloadRecords)
 	if result.Error != nil {
 		log.Println(result.Error)
 	}
