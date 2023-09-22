@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 )
 
 func ReadAllFromUrl(url string) (b []byte, err error) {
@@ -46,12 +45,12 @@ func RemoveFileIfExist(filePath string) bool {
 func GetMediaPath(mediaType int8) string {
 	// 电影
 	if mediaType == 1 {
-		return filepath.Join(config.AppConf.WorkPath, "movies")
+		return config.AppConf.MoviePath
 	}
 
 	// 电视剧
 	if mediaType == 2 {
-		return filepath.Join(config.AppConf.WorkPath, "tvs")
+		return config.AppConf.TvPath
 	}
 
 	return ""

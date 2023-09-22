@@ -14,7 +14,7 @@ import (
 )
 
 type Option struct {
-	WorkPath string `short:"w" long:"work" description:"媒体库路径" default:"E:\\media"`
+	ConfigPath string `short:"c" long:"config" description:"配置文件"`
 }
 
 var opt Option
@@ -26,17 +26,15 @@ func main() {
 		return
 	}
 
-	if opt.WorkPath == "" {
-		log.Println("未设置媒体库路径")
+	if opt.ConfigPath == "" {
+		log.Println("未设置配置文件")
 		return
 	}
 
-	config.InitConfig(config.AppConfig{
-		WorkPath: opt.WorkPath,
-	})
+	config.InitConfig(opt.ConfigPath)
 
-	db.InitDB()
-	utils.InitDowner(3)
+	db.InitDB(config.AppConf.DBPath)
+	utils.InitDowner(5)
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,

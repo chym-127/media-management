@@ -1,35 +1,54 @@
 package config
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"path/filepath"
 )
 
+type SetupConfig struct {
+	MediaPath string `json:"media_path" bson:"media_path"`
+	DBPath    string `json:"db_path" bson:"db_path"`
+}
+
 type AppConfig struct {
-	WorkPath  string `json:"workPath"`
-	MoviePath string `json:"moviePath"`
-	TvPath    string `json:"tvPath"`
+	MediaPath string
+	DBPath    string
+	MoviePath string
+	TvPath    string
 }
 
 var AppConf = AppConfig{
-	WorkPath: "",
+	MediaPath: "",
 }
 
-func InitConfig(config AppConfig) {
-	AppConf.WorkPath = config.WorkPath
-	if _, err := os.Stat(AppConf.WorkPath); os.IsNotExist(err) {
-		log.Println("目录不存在")
-		panic("目录不存在")
+func InitConfig(configPath string) {
+	b, err := os.ReadFile(configPath) // just pass the file name
+	if err != nil {
+		panic("配置文件不存在")
+	}
+	setupConfig := SetupConfig{}
+	err = json.Unmarshal(b, &setupConfig)
+	if err != nil {
+		panic("配置文件解析失败")
 	}
 
-	if AppConf.WorkPath != "" {
-		AppConf.MoviePath = filepath.Join(AppConf.WorkPath, "movies")
-		AppConf.TvPath = filepath.Join(AppConf.WorkPath, "tvs")
-		_ = os.Mkdir(AppConf.MoviePath, os.ModeDir)
-		_ = os.Mkdir(AppConf.TvPath, os.ModeDir)
-		log.Println(AppConf.MoviePath)
-		log.Println(AppConf.TvPath)
-
+	if setupConfig.MediaPath == "" {
+		panic("缺少媒体路径")
 	}
+
+	if setupConfig.DBPath == "" {
+		panic("缺少数据库路径")
+	}
+
+	AppConf.MediaPath = setupConfig.MediaPath
+	AppConf.DBPath = setupConfig.DBPath
+
+	AppConf.MoviePath = filepath.Join(AppConf.MediaPath, "movies")
+	AppConf.TvPath = filepath.Join(AppConf.MediaPath, "tvs")
+	_ = os.Mkdir(AppConf.MoviePath, os.ModeDir)
+	_ = os.Mkdir(AppConf.TvPath, os.ModeDir)
+	log.Println(AppConf.MoviePath)
+	log.Println(AppConf.TvPath)
 }
