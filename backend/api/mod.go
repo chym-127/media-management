@@ -100,7 +100,7 @@ func ListHandler(c *gin.Context) {
 		c.JSON(http.StatusOK, GenResponse(nil, PARAMETER_ERROR, "FAILED"))
 		return
 	}
-	medias, err := db.ListMedia()
+	medias, err := db.ListMedia(listMediaReq)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))

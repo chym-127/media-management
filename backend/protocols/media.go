@@ -30,13 +30,14 @@ type EpisodeItem struct {
 }
 
 type Page struct {
-	PageSize  int64 `json:"page_size" bson:"page_size"`
-	PageLimit int64 `json:"page_limit" bson:"page_limit"`
+	Current   int `json:"current"  bson:"current"`
+	PageLimit int `json:"page_limit" bson:"page_limit"`
 }
 
 type ListMediaReq struct {
 	Page
 	Keywords string `json:"keywords" bson:"keywords"`
+	Type     int    `json:"type" bson:"type"`
 }
 
 type GetMediaReq struct {

@@ -66,9 +66,24 @@ func UpdateMedia(media *Media) error {
 	return nil
 }
 
-func ListMedia() ([]Media, error) {
+func ListMedia(listMediaReq protocols.ListMediaReq) ([]Media, error) {
+	log.Println(listMediaReq)
+	if listMediaReq.Current == 0 {
+		listMediaReq.Current = 1
+	}
+	if listMediaReq.PageLimit == 0 {
+		listMediaReq.PageLimit = 10
+	}
 	var medias []Media
-	result := DB.Model(&Media{}).Find(&medias)
+	result := DB.Model(&Media{})
+	if listMediaReq.Keywords != "" {
+		result = result.Where("title LIKE ?", "%"+listMediaReq.Keywords+"%")
+	}
+	if listMediaReq.Type != 0 {
+		result = result.Where("type = ?", listMediaReq.Type)
+	}
+	result = result.Limit(listMediaReq.PageLimit).Offset((listMediaReq.Current - 1) * listMediaReq.PageLimit).Find(&medias)
+
 	if result.Error != nil {
 		return medias, result.Error
 	}

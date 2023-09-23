@@ -23,7 +23,7 @@ func UpdateDiskFromDB(c *gin.Context) {
 		return
 	}
 
-	_, err := db.ListMedia()
+	_, err := db.ListMedia(protocols.ListMediaReq{})
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
@@ -36,7 +36,7 @@ func UpdateMediaMetaDataFromDisk(c *gin.Context) {
 		return
 	}
 
-	medias, err := db.ListMedia()
+	medias, err := db.ListMedia(protocols.ListMediaReq{})
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
