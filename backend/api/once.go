@@ -35,8 +35,14 @@ func UpdateMediaMetaDataFromDisk(c *gin.Context) {
 		c.JSON(http.StatusOK, GenResponse(nil, TASK_RUNNING, "任务进行中"))
 		return
 	}
-
-	medias, err := db.ListMedia(protocols.ListMediaReq{})
+	utils.GetMediaMetaFromTMDB(1)
+	utils.GetMediaMetaFromTMDB(2)
+	args := protocols.ListMediaReq{
+		Page: protocols.Page{
+			PageLimit: -1,
+		},
+	}
+	medias, err := db.ListMedia(args)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
