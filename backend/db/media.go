@@ -139,7 +139,7 @@ func GetMediaDownloadRecordByMediaID(id uint) (MediaDownloadRecord, error) {
 
 func ListMediaDownloadRecord() ([]MediaDownloadRecord, error) {
 	var mediaDownloadRecords []MediaDownloadRecord
-	result := DB.Model(&MediaDownloadRecord{}).Find(&mediaDownloadRecords)
+	result := DB.Model(&MediaDownloadRecord{}).Order("updated_at desc").Find(&mediaDownloadRecords)
 	if result.Error != nil {
 		log.Println(result.Error)
 	}
@@ -148,7 +148,7 @@ func ListMediaDownloadRecord() ([]MediaDownloadRecord, error) {
 
 func ListMediaDownloadRecordWithNoLocal() ([]MediaDownloadRecord, error) {
 	var mediaDownloadRecords []MediaDownloadRecord
-	result := DB.Model(&MediaDownloadRecord{}).Where("1=1").Find(&mediaDownloadRecords)
+	result := DB.Model(&MediaDownloadRecord{}).Find(&mediaDownloadRecords)
 	if result.Error != nil {
 		log.Println(result.Error)
 	}

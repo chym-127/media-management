@@ -172,3 +172,46 @@ func GetMediaHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, GenResponse(resp, SUCCESS, "SUCCESS"))
 }
+
+func UpdateMediaHandler(c *gin.Context) {
+	updateMediaReqProtocol := protocols.UpdateMediaReqProtocol{}
+	err := c.ShouldBindJSON(&updateMediaReqProtocol)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, GenResponse(nil, PARAMETER_ERROR, "FAILED"))
+		return
+	}
+	v, err := db.GetMediaByID(updateMediaReqProtocol.ID)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "资源不存在"))
+		return
+	}
+	var resp protocols.MediaItem
+	var episodes []protocols.EpisodeItem
+	err = json.Unmarshal([]byte(v.Episodes), &episodes)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, GenResponse(nil, FAILED, "FAILED"))
+		return
+	}
+
+	for index, v_episode := range episodes {
+		for _, p_episode := range updateMediaReqProtocol.Episodes {
+			if v_episode.Index == p_episode.Index {
+				episodes[index].Url = p_episode.Url
+			}
+		}
+	}
+
+	if updateMediaReqProtocol.PlayConfig != "" {
+		v.PlayConfig = updateMediaReqProtocol.PlayConfig
+	}
+
+	jsonByte, _ := json.Marshal(episodes)
+	v.Episodes = string(jsonByte)
+
+	db.UpdateMedia(&v)
+
+	c.JSON(http.StatusOK, GenResponse(resp, SUCCESS, "SUCCESS"))
+}

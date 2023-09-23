@@ -45,6 +45,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 	r.POST("/import/media", api.ImportMediaHandler)
+	r.POST("/update/media", api.UpdateMediaHandler)
 	r.POST("/list/media", api.ListHandler)
 	r.POST("/get/media", api.GetMediaHandler)
 	r.POST("/down/media", api.DownloadMediaHandle)

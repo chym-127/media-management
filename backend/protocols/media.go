@@ -4,6 +4,12 @@ type ImportMediaReqProtocol struct {
 	Medias []MediaItem `json:"medias"`
 }
 
+type UpdateMediaReqProtocol struct {
+	ID         uint          `json:"id" bson:"id"`
+	Episodes   []EpisodeItem `json:"episodes" bson:"episodes"`
+	PlayConfig string        `json:"play_config" bson:"play_config"`
+}
+
 type MediaItem struct {
 	ID          uint          `json:"id" bson:"id"`
 	Title       string        `json:"title" bson:"title" binding:"required"`
