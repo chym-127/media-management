@@ -82,7 +82,7 @@ func ListMedia(listMediaReq protocols.ListMediaReq) ([]Media, error) {
 	if listMediaReq.Type != 0 {
 		result = result.Where("type = ?", listMediaReq.Type)
 	}
-	result = result.Limit(listMediaReq.PageLimit).Offset((listMediaReq.Current - 1) * listMediaReq.PageLimit).Find(&medias)
+	result = result.Limit(listMediaReq.PageLimit).Offset((listMediaReq.Current - 1) * listMediaReq.PageLimit).Order("created_at desc").Find(&medias)
 
 	if result.Error != nil {
 		return medias, result.Error
