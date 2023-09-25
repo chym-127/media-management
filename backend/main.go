@@ -53,6 +53,7 @@ func main() {
 	r.POST("/down/media/nolocal", api.DownloadAllMediaHandle)
 
 	r.POST("/update/medias/from-disk", api.UpdateMediaMetaDataFromDisk)
+	r.POST("/update/medias/from-db", api.UpdateMediaLocalFromDB)
 
 	r.Run("0.0.0.0:8080")
 }

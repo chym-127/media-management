@@ -60,3 +60,8 @@ type MediaDownloadRecordItem struct {
 	FailedCount   uint   `json:"failed_count" bson:"failed_count"`
 	Type          uint   `json:"type" bson:"type"` //1队列中 2下载中 3下载成功 4下载失败
 }
+
+type UpdateMediaLocalFromDBReq struct {
+	MediaID     uint `json:"media_id" bson:"media_id"`
+	DelOriginal bool `json:"del_original" bson:"del_original"`
+}

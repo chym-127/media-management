@@ -345,3 +345,81 @@ func UpdateNfoFile(filePath string, nfoFileName string) error {
 	doc.WriteToFile(nfoFilePath)
 	return nil
 }
+
+type CallBack func()
+
+func UpdateLocalMedia(medias []db.Media, delOriginal bool, callback CallBack) {
+	var wg sync.WaitGroup
+	p, _ := ants.NewPool(6)
+	defer p.Release()
+	for _, mediaItem := range medias {
+		var episodes []protocols.EpisodeItem
+		err := json.Unmarshal([]byte(mediaItem.Episodes), &episodes)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		var fileName string
+		var workPath string
+		if mediaItem.Type == 1 {
+			workPath = filepath.Join(config.AppConf.MoviePath, mediaItem.Title+"("+strconv.Itoa(int(mediaItem.ReleaseDate))+")")
+		} else if mediaItem.Type == 2 {
+			workPath = filepath.Join(config.AppConf.TvPath, mediaItem.Title+"("+strconv.Itoa(int(mediaItem.ReleaseDate))+")")
+		}
+		_ = os.Mkdir(workPath, os.ModeDir)
+
+		//根据季数排序
+		sort.SliceStable(episodes, func(i, j int) bool {
+			return episodes[i].Season < episodes[j].Season
+		})
+
+		for _, item := range episodes {
+			outputPath := workPath
+			backName := ""
+			if mediaItem.Type == 1 {
+				fileName = mediaItem.Title + ".m3u8"
+				backName = mediaItem.Title + ".m3u8.back"
+			} else if mediaItem.Type == 2 {
+				outputPath = filepath.Join(workPath, "Season-"+strconv.Itoa(int(item.Season)))
+				_ = os.Mkdir(outputPath, os.ModeDir)
+				fileName = "E" + strconv.Itoa(int(item.Index)) + ".m3u8"
+				backName = strconv.Itoa(int(item.Index)) + ".m3u8.back"
+			}
+			filePath := filepath.Join(outputPath, fileName)
+			backFilePath := filepath.Join(outputPath, backName)
+			url := item.Url
+			backFileExist := false
+
+			if delOriginal {
+				delFile(filePath)
+				backFileExist = delFile(backFilePath)
+			}
+
+			if _, err := os.Stat(backFilePath); os.IsNotExist(err) {
+				if backFileExist {
+					wg.Add(1)
+					p.Submit(TaskFuncWrapper(url, backFilePath, &wg))
+				} else if _, err := os.Stat(filePath); os.IsNotExist(err) {
+					wg.Add(1)
+					p.Submit(TaskFuncWrapper(url, filePath, &wg))
+				}
+			}
+
+		}
+		wg.Wait()
+	}
+	callback()
+}
+
+func delFile(filePath string) bool {
+	if _, err := os.Stat(filePath); os.IsExist(err) {
+		e := os.Remove(filePath)
+		if e != nil {
+			log.Println("删除失败")
+			return false
+		}
+		return true
+	}
+	return false
+}

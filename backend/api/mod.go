@@ -23,6 +23,7 @@ const (
 	PARAMETER_ERROR RespCode = 201 //参数解析错误
 	FAILED          RespCode = 202 //操作失败
 	TASK_RUNNING    RespCode = 203 //任务进行中
+	NOT_FOUND       RespCode = 404
 )
 
 type BaseResponse struct {
