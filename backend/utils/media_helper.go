@@ -174,7 +174,7 @@ func GetMediaMetaFromTMDB(mediaType int8) {
 	} else {
 		t = "tvshow"
 	}
-	args := []string{t, "-u", "-n"}
+	args := []string{t, "-u", "--scrapeUnscraped"}
 	log.Println("tinyMediaManager command :tinyMediaManagerCMD " + strings.Join(args, " "))
 	cmd := exec.Command("tinyMediaManagerCMD", args...)
 	_, err := cmd.CombinedOutput()

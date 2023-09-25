@@ -3,9 +3,12 @@ package utils
 import (
 	"chym/stream/backend/config"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/tidwall/sjson"
 )
 
 func ReadAllFromUrl(url string) (b []byte, err error) {
@@ -54,4 +57,27 @@ func GetMediaPath(mediaType int8) string {
 	}
 
 	return ""
+}
+
+func UpdateJsonKey(jsonPath string, maps map[string]interface{}, newBack bool) error {
+	b, err := os.ReadFile(jsonPath) // just pass the file name
+	if err != nil {
+		return err
+	}
+	if newBack {
+		err = ioutil.WriteFile(jsonPath+".back", b, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	content := string(b[:])
+	for k, v := range maps {
+		content, _ = sjson.Set(content, k, v)
+	}
+	newContent := []byte(content)
+	err = os.WriteFile(jsonPath, newContent, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
