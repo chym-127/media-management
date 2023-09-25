@@ -65,3 +65,9 @@ type UpdateMediaLocalFromDBReq struct {
 	MediaID     uint `json:"media_id" bson:"media_id"`
 	DelOriginal bool `json:"del_original" bson:"del_original"`
 }
+
+type ProxyReq struct {
+	Url         string `json:"url" bson:"url"`
+	Method      string `json:"method" bson:"method"`
+	ContentType string `json:"content_type"`
+}

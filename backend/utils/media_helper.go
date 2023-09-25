@@ -284,16 +284,11 @@ func UpdateTvShowEpisodeFileName(episodes []protocols.EpisodeItem, mediaPath str
 			count += 1
 			UpdateNfoFile(mp4FilePath, "E"+strconv.Itoa(int(episodes[index].Index)))
 			if _, err := os.Stat(m3u8FilePath); err == nil {
-				e := os.Rename(m3u8FilePath, backM3u8FilePath)
-				if e != nil {
-					continue
-				}
+				os.Rename(m3u8FilePath, backM3u8FilePath)
 			}
 		} else {
-			e := os.Rename(backM3u8FilePath, m3u8FilePath)
-			if e != nil {
-				continue
-			}
+			os.Rename(backM3u8FilePath, m3u8FilePath)
+			UpdateNfoFile(m3u8FilePath, "E"+strconv.Itoa(int(episodes[index].Index)))
 		}
 	}
 
@@ -308,16 +303,14 @@ func UpdateMovieEpisodeFileName(mediaPath string, mediaTitle string) (int, error
 
 	if _, err := os.Stat(mp4FilePath); err == nil {
 		count += 1
+		log.Println(mp4FilePath)
 		UpdateNfoFile(mp4FilePath, "movie")
 		if _, err := os.Stat(m3u8FilePath); err == nil {
-			e := os.Rename(m3u8FilePath, backM3u8FilePath)
-			if e != nil {
-			}
+			os.Rename(m3u8FilePath, backM3u8FilePath)
 		}
 	} else {
-		e := os.Rename(backM3u8FilePath, m3u8FilePath)
-		if e != nil {
-		}
+		os.Rename(backM3u8FilePath, m3u8FilePath)
+		UpdateNfoFile(m3u8FilePath, "movie")
 	}
 
 	return count, nil
