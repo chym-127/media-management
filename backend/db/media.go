@@ -113,7 +113,11 @@ func GetMediaByID(id uint) (Media, error) {
 
 func GetMediaByTitleWithDate(title string, date int16) (Media, error) {
 	var media Media
-	result := DB.Where("title = ?", title).Where("release_date = ?", date).First(&media)
+	result := DB.Where("title = ?", title)
+	if date != 0 {
+		result = result.Where("release_date = ?", date)
+	}
+	result = result.First(&media)
 	if result.Error != nil {
 		return media, result.Error
 	}

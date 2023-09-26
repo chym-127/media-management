@@ -1,14 +1,13 @@
 package api
 
 import (
-	"chym/stream/backend/config"
 	"chym/stream/backend/db"
 	"chym/stream/backend/protocols"
 	"chym/stream/backend/utils"
 	"errors"
 	"log"
 	"net/http"
-	"path/filepath"
+	"sort"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -52,7 +51,7 @@ func ImportMediaHandler(c *gin.Context) {
 		c.JSON(http.StatusOK, GenResponse(nil, PARAMETER_ERROR, "FAILED"))
 		return
 	}
-	var mediaModels []db.Media
+	// var mediaModels []db.Media
 	for _, media := range importMediaReqProtocol.Medias {
 		if media.Type == 0 {
 			if len(media.Episodes) > 1 {
@@ -61,34 +60,66 @@ func ImportMediaHandler(c *gin.Context) {
 				media.Type = 1
 			}
 		}
-		mediaModel, err := db.GetMediaByTitleWithDate(media.Title, media.ReleaseDate)
+		releaseDate := int16(0)
+		if !media.MoreSeason {
+			releaseDate = media.ReleaseDate
+		}
+		mediaModel, err := db.GetMediaByTitleWithDate(media.Title, releaseDate)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				mediaModel, _ = db.CreateMedia(media)
 			}
 		} else {
-			jsonByte, _ := json.Marshal(media.Episodes)
+			var new_episodes []protocols.EpisodeItem
+			var episodes []protocols.EpisodeItem
+			err = json.Unmarshal([]byte(mediaModel.Episodes), &episodes)
+			if err != nil {
+				continue
+			}
+
+			var e_map = make(map[string]protocols.EpisodeItem)
+			for _, o_v := range episodes {
+				key := strconv.Itoa(int(o_v.Season)) + "-" + strconv.Itoa(int(o_v.Index))
+				e_map[key] = o_v
+			}
+			for _, n_v := range media.Episodes {
+				key := strconv.Itoa(int(n_v.Season)) + "-" + strconv.Itoa(int(n_v.Index))
+				log.Println(n_v)
+				e_map[key] = n_v
+			}
+
+			for _, v := range e_map {
+				new_episodes = append(new_episodes, v)
+			}
+
+			sort.SliceStable(new_episodes, func(i, j int) bool {
+				return new_episodes[i].Index < new_episodes[j].Index
+			})
+
+			jsonByte, _ := json.Marshal(new_episodes)
 			mediaModel.Episodes = string(jsonByte)
+
+			db.UpdateMedia(&mediaModel)
 		}
-		mediaModels = append(mediaModels, mediaModel)
+		// mediaModels = append(mediaModels, mediaModel)
 		utils.SaveEpisode2Disk(media)
 	}
-	utils.GetMediaMetaFromTMDB(1)
-	utils.GetMediaMetaFromTMDB(2)
+	// utils.GetMediaMetaFromTMDB(1)
+	// utils.GetMediaMetaFromTMDB(2)
 
-	for index, m := range mediaModels {
-		if m.Type == 2 {
-			mediaPath := filepath.Join(config.AppConf.TvPath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")")
-			xmlFilePath := filepath.Join(mediaPath, "tvshow.nfo")
-			utils.ParseTvShowXml(xmlFilePath, &m)
-			utils.ParseTvShowEpisodeXml(importMediaReqProtocol.Medias[index].Episodes, &m, mediaPath)
-		}
-		if m.Type == 1 {
-			xmlFilePath := filepath.Join(config.AppConf.MoviePath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")", "movie.nfo")
-			utils.ParseMovieXml(xmlFilePath, &m, importMediaReqProtocol.Medias[index].Episodes)
-		}
-		db.UpdateMedia(&m)
-	}
+	// for index, m := range mediaModels {
+	// 	if m.Type == 2 {
+	// 		mediaPath := filepath.Join(config.AppConf.TvPath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")")
+	// 		xmlFilePath := filepath.Join(mediaPath, "tvshow.nfo")
+	// 		utils.ParseTvShowXml(xmlFilePath, &m)
+	// 		utils.ParseTvShowEpisodeXml(importMediaReqProtocol.Medias[index].Episodes, &m, mediaPath)
+	// 	}
+	// 	if m.Type == 1 {
+	// 		xmlFilePath := filepath.Join(config.AppConf.MoviePath, m.Title+"("+strconv.Itoa(int(m.ReleaseDate))+")", "movie.nfo")
+	// 		utils.ParseMovieXml(xmlFilePath, &m, importMediaReqProtocol.Medias[index].Episodes)
+	// 	}
+	// 	db.UpdateMedia(&m)
+	// }
 
 	c.JSON(http.StatusOK, GenResponse(nil, SUCCESS, "SUCCESS"))
 }

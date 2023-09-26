@@ -12,6 +12,7 @@ type UpdateMediaReqProtocol struct {
 
 type MediaItem struct {
 	ID          uint          `json:"id" bson:"id"`
+	MoreSeason  bool          `json:"more_season" bson:"more_season"`
 	Title       string        `json:"title" bson:"title" binding:"required"`
 	ReleaseDate int16         `json:"release_date" bson:"release_date" binding:"required"`
 	Description string        `json:"description" bson:"description"`
