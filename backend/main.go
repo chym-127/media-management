@@ -4,7 +4,9 @@ import (
 	"chym/stream/backend/api"
 	"chym/stream/backend/config"
 	"chym/stream/backend/db"
+	"chym/stream/backend/iot"
 	"chym/stream/backend/utils"
+	"io"
 	"log"
 	"time"
 
@@ -54,6 +56,39 @@ func main() {
 
 	r.POST("/update/medias/from-disk", api.UpdateMediaMetaDataFromDisk)
 	r.POST("/update/medias/from-db", api.UpdateMediaLocalFromDB)
+
+	api.NewServer()
+	r.GET("/stream", api.MsgStream.ServeHTTP(), func(c *gin.Context) {
+		v, ok := c.Get("clientChan")
+		if !ok {
+			return
+		}
+		clientChan, ok := v.(api.ClientChan)
+		if !ok {
+			return
+		}
+		c.Stream(func(w io.Writer) bool {
+			// Stream message to client from message channel
+			if msg, ok := <-clientChan; ok {
+				c.SSEvent("message", msg)
+				return true
+			}
+			return false
+		})
+	})
+
+	// go func() {
+	// 	for {
+	// 		time.Sleep(time.Second * 10)
+	// 		now := time.Now().Format("2006-01-02 15:04:05")
+	// 		currentTime := fmt.Sprintf("The Current Time Is %v", now)
+
+	// 		// Send current time to clients message channel
+	// 		api.MsgStream.Message <- currentTime
+	// 	}
+	// }()
+
+	iot.InitSerial()
 
 	r.Run("0.0.0.0:8080")
 }

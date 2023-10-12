@@ -72,3 +72,8 @@ type ProxyReq struct {
 	Method      string `json:"method" bson:"method"`
 	ContentType string `json:"content_type"`
 }
+
+type EventMsg struct {
+	Name string      `json:"name"`
+	Data interface{} `json:"data"`
+}

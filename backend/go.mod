@@ -4,6 +4,8 @@ go 1.18
 
 require github.com/gin-gonic/gin v1.9.1
 
+require github.com/creack/goselect v0.1.2 // indirect
+
 require (
 	github.com/beevik/etree v1.2.0 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
@@ -36,6 +38,7 @@ require (
 	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
+	go.bug.st/serial v1.6.1
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/net v0.10.0 // indirect

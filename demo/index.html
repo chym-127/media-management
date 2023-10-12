@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Server Sent Event</title>
+</head>
+
+<body>
+    <div class="event-data"></div>
+</body>
+
+<script>
+    // EventSource object of javascript listens the streaming events from our go server and prints the message.
+    var stream = new EventSource("http://localhost:8080/stream");
+    stream.addEventListener("message", function (e) {
+        console.log(e.data);
+    });
+</script>
+
+</html>

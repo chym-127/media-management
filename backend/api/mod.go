@@ -84,7 +84,6 @@ func ImportMediaHandler(c *gin.Context) {
 			}
 			for _, n_v := range media.Episodes {
 				key := strconv.Itoa(int(n_v.Season)) + "-" + strconv.Itoa(int(n_v.Index))
-				log.Println(n_v)
 				e_map[key] = n_v
 			}
 
